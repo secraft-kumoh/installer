@@ -20,6 +20,9 @@ class Download:
         self.package_list_link: str = "https://secraft-kumoh.github.io/package/package.json"
 
         self.mods_path: str = get_mods_path()
+        self.package_data: dict = {}
+
+        self.client_folder = "client"
     
     def mods_folder_set(self):
         """
@@ -39,12 +42,7 @@ class Download:
 
     def download_mods(self):
         """ 모드 다운로드 및 적용 """
-        req = requests.get(self.package_list_link)
-        data = req.json()
-        # 서버에 필요한 버전
-        self.now_version = data["version"]
-
-        mods_dict = data["data"][self.now_version]["mods"]
+        mods_dict = self.package_data["data"][self.now_version]["mods"]
 
         for mod in mods_dict:
             link = mods_dict[mod]
@@ -54,19 +52,50 @@ class Download:
                 file.write(response.content)
     
     def download_macos(self):
-        req = requests.get(self.package_list_link)
-        data = req.json()
-        # 서버에 필요한 버전
-        self.now_version = data["version"]
+        """ 맥용 클라이언트 다운로드 및 설치 """
+        # 받아야 할 클라이언트 목록
+        client_dict = self.package_data["data"][self.now_version]["client"]
 
-        mods_dict = data["data"][self.now_version]["mods"]
+        for client_name in client_dict:
+            download_link = client_dict[client_name]["macos"]
+            file_name = f"{self.client_folder}/{download_link.split('/')[-1]}"
+            with open(file_name, "wb") as file:
+                response = requests.get(download_link)
+                file.write(response.content)
 
-        mods_list = []
-        for mod in mods_dict:
-            mods_list.append(mods_dict[mod])
-        
-        print(mods_list)
     
+    def download_windows(self):
+        """ 윈도우용 클라이언트 다운로드 및 설치 """
+        # 받아야 할 클라이언트 목록
+        client_dict = self.package_data["data"][self.now_version]["client"]
+
+        for client_name in client_dict:
+            download_link = client_dict[client_name]["windows"]
+            file_name = f"{self.client_folder}/{download_link.split('/')[-1]}"
+            with open(file_name, "wb") as file:
+                response = requests.get(download_link)
+                file.write(response.content)
+
+    def install_client(self):
+        # 리스트 다운로드
+        req = requests.get(self.package_list_link)
+        self.package_data = req.json()
+
+        # 서버에 필요한 버전
+        self.now_version = self.package_data["version"]
+
+        # 클라이언트 폴더 생성
+        try:
+            shutil.rmtree(self.client_folder)
+        except FileNotFoundError:
+            pass
+        os.mkdir(self.client_folder)
+
+        now_os = platform.system()
+        if now_os == "Windows":
+            self.download_windows()
+        elif now_os == "Darwin":
+            self.download_macos()
+
 a = Download()
-# a.download_macos()
-a.download_mods()
+a.install_client()
