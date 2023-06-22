@@ -68,7 +68,7 @@ class Download:
             case "jar":
                 os.system(f'java -jar {file_path}')
 
-    def download_macos(self) -> None:
+    def _download_macos(self) -> None:
         """ 맥용 클라이언트 다운로드 """
         # 받아야 할 클라이언트 목록
         client_dict = self.package_data["data"][self.now_version]["client"]
@@ -83,7 +83,7 @@ class Download:
             # 설치 시작
             self._start_client_installer(file_name)
     
-    def download_windows(self) -> None:
+    def _download_windows(self) -> None:
         """ 윈도우용 클라이언트 다운로드 """
         # 받아야 할 클라이언트 목록
         client_dict = self.package_data["data"][self.now_version]["client"]
@@ -114,8 +114,8 @@ class Download:
         os.mkdir(self.client_folder)
 
         if self.now_os == "Windows":
-            self.download_windows()
+            self._download_windows()
         elif self.now_os == "Darwin":
-            self.download_macos()
+            self._download_macos()
         
         self._download_mods()
