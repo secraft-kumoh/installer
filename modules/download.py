@@ -8,7 +8,7 @@ def get_mods_path() -> str:
     now_os = platform.system()
     mods_path: str = ""
     if now_os == "Windows":
-        mods_path = os.environ["APPDATA"] + "/.minecraft"
+        mods_path = os.environ["APPDATA"] + "\\.minecraft"
     elif now_os == "Darwin":
         mods_path = os.environ["HOME"] + "/Library/Application Support/minecraft"
     
@@ -31,18 +31,23 @@ class Download:
             모드 폴더가 이미 존재한다면 백업 후 폴더 생성
             백업 폴더가 존재한다면 삭제 후 기존 모드폴더를 백업
         """
+        if self.now_os == "Windows":
+            modpath = self.mods_path + "\\mods"
+        else:
+            modpath = self.mods_path + "/mods"
+            
         if os.path.exists(self.mods_path):
-            if not os.path.exists(self.mods_path + "/mods"):
-                os.mkdir(self.mods_path + "/mods")
+            if not os.path.exists(modpath):
+                os.mkdir(modpath)
             else:
                 # 기존 백업폴더가 존재한다면 삭제
                 if os.path.exists("mods"):
                     shutil.rmtree("mods")
                 # 모드 폴더가 없다면 폴더를 이동
-                shutil.move(self.mods_path + "/mods", "mods")
-                os.mkdir(self.mods_path + "/mods")
+                shutil.move(modpath, "mods")
+                os.mkdir(modpath)
         else:
-            os.mkdir(self.mods_path + "/mods")
+            os.mkdir(modpath)
 
     def _download_mods(self) -> None:
         """ 모드 다운로드 및 적용 """
@@ -52,7 +57,11 @@ class Download:
 
         for mod in mods_dict:
             link = mods_dict[mod]
-            file_name = f"{self.mods_path}/mods/{link.split('/')[-1]}"
+            if self.now_os == "Windows":
+                file_name = f"{self.mods_path}\\mods\\{link.split('/')[-1]}"
+            else:
+                file_name = f"{self.mods_path}/mods/{link.split('/')[-1]}"
+
             with open(file_name, "wb") as file:
                 response = requests.get(link)
                 file.write(response.content)
@@ -90,7 +99,7 @@ class Download:
 
         for client_name in client_dict:
             download_link = client_dict[client_name]["windows"]
-            file_name = f"{self.client_folder}/{download_link.split('/')[-1]}"
+            file_name = f"{self.client_folder}\\{download_link.split('/')[-1]}"
             with open(file_name, "wb") as file:
                 response = requests.get(download_link)
                 file.write(response.content)
