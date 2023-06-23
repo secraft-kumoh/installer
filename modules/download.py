@@ -127,4 +127,8 @@ class Download:
         elif self.now_os == "Darwin":
             self._download_macos()
         
+        print("MODS DOWNLOADING...")
+
         self._download_mods()
+
+        print("MODS DOWNLOAD COMPLETE!")
